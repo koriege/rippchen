@@ -254,7 +254,9 @@ function options::usage(){
 		-no-uniq | --no-uniqify               : disables extraction of properly paired and uniquely mapped reads
 		-no-sort | --no-sort                  : disables sorting alignments
 		-bl      | --blacklist [path|string]  : bedfile of regions or reference/chromosome name to filter alignments for
-		-sf      | -- [value:value] : fragment size filtering for alignments to be kept by a given range
+		-sf      | --sizefilter [value:value] : fragment size filtering for alignments to be kept by a given range. applys to all samples unless -tfs option
+		                                        NOTE: recommendation is 0:1000
+		-tsf     | --treat-sf [value:value]   : *IP-Seq fragment size filtering for alignments to be kept by a given range. unless -sf, normal fragment size default: 0:1000
 		                                        NOTE: relaxed or conservative (DOI: 10.1038/nmeth.2688) recommendations
 		                                        0:120   or 0:100   - ATAC nucleosome free regions
 		                                        151:280 or 181:250 - ATAC mononucleosomes
@@ -514,6 +516,7 @@ function options::checkopt(){
 		-fs       | --fragmentsize) arg=true; FRAGMENTSIZE=$2;;
 		-bl       | --blacklist) arg=true; noblist=false; BLACKLIST=$2;;
 		-sf       | --sizefilter) arg=true; nofsel=false; FRAGMENTSIZERANGE=$2;;
+		-tsf      | --treat-sf) arg=true; nofsel=false; TREATFRAGMENTSIZERANGE=$2;;
 		-ct       | --cliptn5) noctn5=false;;
 		-sp       | --strict-peaks) STRICTPEAKS=true;;
 		-pp       | --pointy-peaks) POINTYPEAKS=true;;

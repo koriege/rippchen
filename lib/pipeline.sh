@@ -432,15 +432,43 @@ function pipeline::_mapping(){
 	}
 
 	${nofsel:=true} || {
-		alignment::postprocess \
-			-S ${nofsel:=false} \
-			-s ${Sfsel:=false} \
-			-j sizeselect \
-			-f "$FRAGMENTSIZERANGE" \
-			-t $THREADS \
-			-M $MAXMEMORY \
-			-o "$OUTDIR/mapped" \
-			-r mapper
+		if [[ $TREATFRAGMENTSIZERANGE ]]; then
+			declare -A insertsizes
+			local m i
+			for m in "${mapper[@]}"; do
+				declare -n _bams=$m
+				for i in "${!tidx[@]}"; do
+					insertsizes["${_bams[${tidx[$i]}]}"]="$TREATFRAGMENTSIZERANGE"
+					if [[ ${nidx[$i]} ]]; then
+						insertsizes["${_bams[${nidx[$i]}]}"]="${FRAGMENTSIZERANGE:-"0:1000"}"
+					fi
+				done
+			done
+			alignment::sizeselect \
+				-S ${nofsel:=false} \
+				-s ${Sfsel:=false} \
+				-x insertsizes \
+				-t $THREADS \
+				-o "$OUTDIR/mapped" \
+				-r mapper
+		else
+			# alignment::postprocess \
+			# 	-S ${nofsel:=false} \
+			# 	-s ${Sfsel:=false} \
+			# 	-j sizeselect \
+			# 	-f "${FRAGMENTSIZERANGE:-"0:1000"}" \
+			# 	-t $THREADS \
+			# 	-M $MAXMEMORY \
+			# 	-o "$OUTDIR/mapped" \
+			# 	-r mapper
+			alignment::sizeselect \
+				-S ${nofsel:=false} \
+				-s ${Sfsel:=false} \
+				-d "${FRAGMENTSIZERANGE:-"0:1000"}" \
+				-t $THREADS \
+				-o "$OUTDIR/mapped" \
+				-r mapper
+		fi
 		alignment::add4stats -r mapper
 		alignment::bamqc \
 			-S ${noqual:=false} \
@@ -913,7 +941,7 @@ function pipeline::callpeak(){
 			-mem $MEMORY \
 			-tmp "$TMPDIR" \
 			-o "$OUTDIR/spikein" \
-			-l "$OUTDIR/spikein/run.log" \
+			-l "$(dirname "$LOG")/spikein.$(basename "$LOG")" \
 			-g "$SPIKEINGENOME" \
 			-p $PEAKS \
 			-t1 "$tdir/R1.spikein.lst" \
