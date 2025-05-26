@@ -964,7 +964,7 @@ function pipeline::callpeak(){
 			$([[ $REGEX ]] && echo "-rx '$REGEX'" || true) \
 			$(${noctn5:=false} || echo "-ct") \
 			$(${nocmo:=false} && echo "-no-cmo" || echo "-cmo") \
-			$(${nostats:=false} && echo "-no-stats" || true) \
+			$(${nostats:=false} && echo "-no-stats" || echo "-redo stats") \
 			-no-call \
 			$(${Sspin:=false} && echo "-resume call" || true) \
 			$(${Smd5:=false} && echo "-skip md5" || true)
