@@ -137,6 +137,7 @@ function options::usage(){
 		                                        NOTE: no file implies -no-dma. see below for format information
 		-g       | --genome [path]            : genome fasta input. without, only preprocessing is performed
 		                                        NOTE: no fasta file implies -no-map
+		-sg      | --spikein-genome [path]    : spike-in fasta input to align unmapped reads to
 		-1       | --fq1 [path,..]            : fastq input. single or first mate. comma separated or a file with all paths
 		-2       | --fq2 [path,..]            : fastq input. mate pair. comma separated or a file with all paths
 		-3       | --fq3 [path,..]            : fastq input. UMI sequences. comma separated or a file with all paths

@@ -559,6 +559,64 @@ function pipeline::bs(){
 		-t $THREADS \
 		-o "$OUTDIR/stats"
 
+	if [[ $SPIKEINGENOME ]]; then
+		commander::printinfo "analyzing spikeins"
+		# form add4stats derived collection stage 0
+		alignment::tofastq \
+			-S ${nospin:=true} \
+			-s ${Sspin:=false} \
+			-t $THREADS \
+			-1 FASTQ1 \
+			-2 FASTQ2 \
+			-3 FASTQ3 \
+			-r mapper \
+			-i 0 \
+			-u \
+			-o "$OUTDIR/spikein/fastq"
+
+		local i tdir="$(mktemp -d -p "${TMPDIR:-/tmp}" cleanup.XXXXXXXXXX.spikein)"
+		printf "%s\n" "${FASTQ1[@]}" > "$tdir/R1.spikein.lst"
+		printf "%s\n" "${FASTQ2[@]}" > "$tdir/R2.spikein.lst"
+		printf "%s\n" "${FASTQ3[@]}" > "$tdir/UMI.spikein.lst"
+
+		rippchen.sh \
+			-v 2 \
+			-t $THREADS \
+			-xmem $MAXMEMORY \
+			-mem $MEMORY \
+			-tmp "$TMPDIR" \
+			-o "$OUTDIR/spikein" \
+			-l "$(dirname "$LOG")/spikein.$(basename "$LOG")" \
+			-g "$SPIKEINGENOME" \
+			-b $DIVERSITY \
+			-1 "$tdir/R1.spikein.lst" \
+			-2 "$tdir/R2.spikein.lst" \
+			-3 "$tdir/UMI.spikein.lst" \
+			-no-qual \
+			-no-trim \
+			-no-mspi \
+			-no-clip \
+			-no-pclip \
+			-no-cor \
+			-no-rrm \
+			-d $DISTANCE \
+			-i $INSERTSIZE \
+			$(${nosege:=false} && echo "-no-sege" || true) \
+			$(${nobwa:=false} && echo "-no-bwa" || true) \
+			$(${noblist:=true} || echo "-bl dummy") \
+			$(${nofsel:=true} || echo "-sf 0:1000") \
+			$(${normd:=false} && echo "-no-rmd" || echo "-rmd") \
+			$([[ $REGEX ]] && echo "-rx '$REGEX'" || true) \
+			$(${nocmo:=false} && echo "-no-cmo" || echo "-cmo") \
+			$(${nostats:=false} && echo "-no-stats" || echo "-redo stats") \
+			-cx CNN \
+			$(${nomedl:=false} && echo "-no-medl" || true) \
+			$(${nohaarz:=false} && echo "-no-haarz" || true) \
+			-no-dma \
+			$(${Sspin:=false} && echo "-resume dma" || true) \
+			$(${Smd5:=false} && echo "-skip md5" || true)
+	fi
+
 	bisulfite::methyldackel \
 		-S ${nomedl:=false} \
 		-s ${Smedl:=false} \
